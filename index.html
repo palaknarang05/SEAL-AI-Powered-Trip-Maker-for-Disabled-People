@@ -83,7 +83,7 @@
   <div class="header-top">
     <div class="container">
 
-      <a href="tel:+01123456790" class="helpline-box">
+      <a href="tel:+918999345784" class="helpline-box">
 
         <div class="icon-box">
           <ion-icon name="call-outline"></ion-icon>
@@ -91,14 +91,24 @@
 
         <div class="wrapper">
           <p class="helpline-title">For Further Inquires :</p>
-
-          <p class="helpline-number">+91 899XXXXXX</p>
+          <p class="helpline-number">+91 899XXXXX</p>
         </div>
 
       </a>
 
 
       <div class="header-btn-group">
+
+        <!-- Login & Face Login -->
+        <div style="display: flex; gap: 10px; align-items: center; margin-right: 15px;">
+          <button class="btn btn-secondary" style="padding: 8px 20px; font-size: 0.9rem;" onclick="alert('Standard Login coming in Phase 2')">Login</button>
+          <a href="https://face-recognition.karkranikhil.now.sh/" target="_blank" style="text-decoration: none;">
+            <button class="btn btn-primary" style="padding: 8px 20px; font-size: 0.9rem; display: flex; align-items: center; gap: 5px;">
+              <ion-icon name="scan-outline"></ion-icon> Face Login
+            </button>
+          </a>
+        </div>
+
         <!-- Weather Search Module -->
         <div style="position: relative; display: flex; align-items: center; margin-right: 15px;">
           <form onsubmit="event.preventDefault(); fetchWeather();" style="margin: 0;">
@@ -313,7 +323,7 @@
     <section class="tour-search">
       <div class="container">
 
-        <form action="" class="tour-search-form">
+        <form action="" class="tour-search-form" onsubmit="event.preventDefault(); alert('Search functionality linking to API in Phase 2');">
 
           <div class="input-wrapper">
             <label for="destination" class="input-label">Search Destination*</label>
@@ -472,7 +482,7 @@
 
         </ul>
 
-        <button class="btn btn-primary">More destinations</button>
+        <button type="button" class="btn btn-primary" data-scroll-to="#accessible-trips">Explore Accessible Trips</button>
 
       </div>
     </section>
@@ -601,8 +611,9 @@
                   INR 9000
                   <span>/ per person</span>
                 </p>
+                <p style="font-size: 0.75rem; color: #64748b; margin-top: -10px; margin-bottom: 15px;">*Land package only. Excludes transit to city.</p>
 
-                <button class="btn btn-secondary">Book Now</button>
+                <a href="paymentportal.html"><button class="btn btn-secondary">Book Now</button></a>
 
               </div>
 
@@ -671,8 +682,9 @@
                   INR 9999
                   <span>/ per person</span>
                 </p>
-                <a href = https://forms.gle/MkMXqDcwyQNLWPte9>
-                  <button class="btn btn-secondary">Book Now</button> </a>
+                <p style="font-size: 0.75rem; color: #64748b; margin-top: -10px; margin-bottom: 15px;">*Land package only. Excludes transit to city.</p>
+
+                <a href="paymentportal.html"><button class="btn btn-secondary">Book Now</button></a>
 
               </div>
 
@@ -744,8 +756,9 @@
                   INR 12000
                   <span>/ per person</span>
                 </p>
+                <p style="font-size: 0.75rem; color: #64748b; margin-top: -10px; margin-bottom: 15px;">*Land package only. Excludes transit to city.</p>
 
-                <button class="btn btn-secondary">Book Now</button>
+                <a href="paymentportal.html"><button class="btn btn-secondary">Book Now</button></a>
 
               </div>
 
@@ -754,7 +767,7 @@
 
         </ul>
 
-        <button class="btn btn-primary">View All Packages</button>
+        <button type="button" class="btn btn-primary" onclick="alert('Full trip catalog will be connected to the database in Phase 2!')">View All Packages</button>
 
       </div>
     </section>
@@ -835,9 +848,9 @@
 
           </p>
         </div>
-        <a href = "mailto:palak.23bce11819@vitbhopal.ac.in">
-
-          <button class="btn btn-secondary">Mail Us !</button></a>
+        <a href="mailto:palak.23bce11819@vitbhopal.ac.in">
+          <button class="btn btn-secondary">Mail Us !</button>
+        </a>
 
       </div>
     </section>
@@ -883,13 +896,13 @@
           <li class="contact-item">
             <ion-icon name="call-outline"></ion-icon>
 
-            <a href="tel:+01123456790" class="contact-link">+091 899XXXXXX</a>
+            <a href="tel:+91899XXXXXX" class="contact-link">+91 899XXXXXX</a>
           </li>
 
           <li class="contact-item">
             <ion-icon name="mail-outline"></ion-icon>
 
-            <a href="mailto:info.SEAL.com" class="contact-link">info.SEAL.com</a>
+            <a href="mailto:palak.23bce11819@vitbhopal.ac.in" class="contact-link">palak.23bce11819@vitbhopal.ac.in</a>
           </li>
 
           <li class="contact-item">
@@ -908,7 +921,7 @@
           Subscribe our newsletter for more update & news !!
         </p>
 
-        <form action="" class="form-wrapper">
+        <form action="" class="form-wrapper" onsubmit="event.preventDefault(); alert('Subscribed successfully!');">
           <input type="email" name="email" class="input-field" placeholder="Enter Your Email" required>
 
           <button type="submit" class="btn btn-secondary">Subscribe</button>

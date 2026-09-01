@@ -8,18 +8,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SEAL</title>
 
-  <!-- 
+  <!--
     - favicon
   -->
   <link rel="shortcut icon" href="./favicon.svg" type="image/svg+xml">
 
-  <!-- 
+  <!--
     - custom css link
   -->
   <link rel="stylesheet" href="./assets/css/style.css">
   <link rel="stylesheet" href="./assets/css/accessibility.css">
 
-  <!-- 
+  <!-- Set theme before first paint, so there's no light-mode flash on load -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('seal-theme');
+        if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      } catch (e) {}
+    })();
+  </script>
+
+  <!--
     - google font link
   -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,34 +37,13 @@
   <link
           href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap"
           rel="stylesheet">
-  <style>
-    /* 1. Force the Accessibility bar to stay at the very top edge */
-    .a11y-bar {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      z-index: 10000 !important;
-    }
-
-    /* 2. Force the entire header to move down so it doesn't get covered */
-    .header {
-      top: 40px !important;
-      margin-top: 0px !important;
-    }
-
-    /* 3. Push the main website body down so nothing slides underneath */
-    body {
-      padding-top: 120px !important;
-    }
-  </style>
-
 </head>
 
 <body id="top">
 
 <!--
   - #ACCESSIBILITY TOOLBAR
+  - Sticky bar: high-contrast toggle, font-size steps, voice search, read-aloud master switch.
 -->
 <div class="a11y-bar" role="region" aria-label="Accessibility tools">
   <div class="container a11y-bar-inner">
@@ -75,6 +64,10 @@
       <ion-icon name="volume-high-outline"></ion-icon> Read Page
     </button>
 
+    <button type="button" class="a11y-btn" id="a11yDarkToggle" aria-pressed="false">
+      <ion-icon name="moon-outline"></ion-icon> Dark Mode
+    </button>
+
     <span id="a11yStatus" class="a11y-status" role="status" aria-live="polite"></span>
   </div>
 </div>
@@ -91,20 +84,23 @@
     <div class="container">
 
       <a href="tel:+01123456790" class="helpline-box">
+
         <div class="icon-box">
           <ion-icon name="call-outline"></ion-icon>
         </div>
+
         <div class="wrapper">
           <p class="helpline-title">For Further Inquires :</p>
-          <p class="helpline-number">+91 8999345784</p>
+
+          <p class="helpline-number">+91 899XXXXXX</p>
         </div>
+
       </a>
 
 
-      <div class="header-btn-group" style="display: flex; align-items: center; gap: 15px;">
-
-        <!-- Weather Search Module (Fixed) -->
-        <div style="position: relative; display: flex; align-items: center;">
+      <div class="header-btn-group">
+        <!-- Weather Search Module -->
+        <div style="position: relative; display: flex; align-items: center; margin-right: 15px;">
           <form onsubmit="event.preventDefault(); fetchWeather();" style="margin: 0;">
             <div style="display: flex; gap: 5px;">
               <input
@@ -121,9 +117,8 @@
 
           <!-- Weather Output (Floating Dropdown) -->
           <div id="output" style="position: absolute; top: 130%; right: 0; z-index: 9999;"></div>
-        </div>
 
-        <script>
+          <script>
             const apiId = '2f0a023b059444d28d065913240905';
             function fetchWeather() {
               var CityName = document.getElementById('cityName').value;
@@ -143,6 +138,7 @@
                     document.getElementById('output').innerHTML = `<div style="color:red; background:white; padding:10px; border-radius:10px; font-weight:bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">City not found</div>`;
                     return;
                   }
+                  // Floating Card Styling
                   let output = `
                   <div style="color:black; min-width: 200px; background-color:white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); border: 1px solid #eee; padding: 15px; text-align: center;">
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -160,30 +156,9 @@
                 });
             }
           </script>
+        </div>
 
-        <script>
-          function sendUserInput() {
-              const userInput = document.getElementById('userInput').value;
-
-              // Send the user input to the server
-              fetch('/process-input', {
-                  method: 'POST',
-                  headers: {
-                      'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ text: userInput })
-              })
-              .then(response => response.text())
-              .then(data => {
-                  console.log('Server response:', data);
-              })
-              .catch(error => {
-                  console.error('Error:', error);
-              });
-          }
-          </script>
-
-        <button class="search-btn" aria-label="Search">
+        <button class="search-btn" aria-label="Jump to accessible trip search" data-scroll-to="#accessible-trips">
           <ion-icon name="search"></ion-icon>
         </button>
 
@@ -264,8 +239,6 @@
         </ul>
 
       </nav>
-      <a href="https://face-recognition.karkranikhil.now.sh/">
-        <button class="btn btn-primary" >Sign in via face</button></a>
 
     </div>
   </div>
@@ -279,6 +252,8 @@
 <main>
   <article>
 
+
+
     <!--
       - #HERO
     -->
@@ -286,17 +261,42 @@
     <section class="hero" id="home">
       <div class="container">
 
-        <h2 class="h1 hero-title">SEAL</h2>
-        <h3 style="color: white;"> Safe Explorer Alternative </h3>
+        <!-- Typewriter Animated Title -->
+        <h1 class="seal-logo" aria-label="SEAL">
+          <span id="sealTypewriter"></span><span class="seal-cursor">|</span>
+        </h1>
 
-        <p class="hero-text">
+        <p class="hero-eyebrow hero-reveal" data-reveal-order="1">Safe Explorer Alternative &bull; AI-Powered Trip Maker for Disabled People</p>
 
+        <p class="hero-text hero-reveal" data-reveal-order="2">
+          Filter trips by wheelchair access, sensory comfort, strict-veg food, and sign-language
+          support &mdash; see it all before you book, not after you arrive.
         </p>
 
-        <div class="btn-group">
-          <button class="btn btn-primary">Learn more</button>
+        <div class="hero-badges hero-reveal" data-reveal-order="3">
+          <span class="hero-badge"><ion-icon name="accessibility-outline"></ion-icon> Step-Free Routes</span>
+          <span class="hero-badge"><ion-icon name="volume-high-outline"></ion-icon> Voice &amp; Read-Aloud</span>
+          <span class="hero-badge"><ion-icon name="timer-outline"></ion-icon> Zero Countdown Timers</span>
+        </div>
 
-          <button class="btn btn-secondary">Book now</button>
+        <form class="hero-search hero-reveal" data-reveal-order="4" id="heroSearchForm" role="search" aria-label="Search accessible trips">
+          <ion-icon name="search-outline" class="hero-search-icon"></ion-icon>
+          <input
+                  type="text"
+                  id="heroSearchInput"
+                  class="hero-search-input"
+                  placeholder="Search a city or destination…"
+                  aria-label="Search a city or destination"
+          >
+          <button type="button" id="heroVoiceBtn" class="hero-search-mic" aria-label="Search by voice" aria-pressed="false">
+            <ion-icon name="mic-outline"></ion-icon>
+          </button>
+          <button type="submit" class="btn btn-primary hero-search-submit">Search</button>
+        </form>
+
+        <div class="btn-group hero-reveal" data-reveal-order="5">
+          <button type="button" class="btn btn-secondary" data-scroll-to="#accessible-trips">Find Accessible Trips</button>
+          <button type="button" class="btn btn-secondary" id="heroAskAssistant">Ask The Assistant</button>
         </div>
 
       </div>
@@ -483,6 +483,7 @@
 
     <!--
       - #ACCESSIBLE TRIP FINDER
+      - Filter chips backed by GET /api/destinations, cards rendered from JSON.
     -->
 
     <section class="a11y-finder" id="accessible-trips">
@@ -835,6 +836,7 @@
           </p>
         </div>
         <a href = "mailto:palak.23bce11819@vitbhopal.ac.in">
+
           <button class="btn btn-secondary">Mail Us !</button></a>
 
       </div>
@@ -881,7 +883,7 @@
           <li class="contact-item">
             <ion-icon name="call-outline"></ion-icon>
 
-            <a href="tel:+01123456790" class="contact-link">+091 8XXXXXXX4</a>
+            <a href="tel:+01123456790" class="contact-link">+091 899XXXXXX</a>
           </li>
 
           <li class="contact-item">
@@ -960,6 +962,7 @@
 
 <!--
   - #ACCESSIBLE TRAVEL ASSISTANT (chat widget)
+  - Phase 1: talks to POST /api/assistant (rule-based). Phase 2 swaps in a real LLM, same contract.
 -->
 <button type="button" class="a11y-chat-toggle" id="a11yChatToggle" aria-expanded="false" aria-controls="a11yChatPanel">
   <ion-icon name="chatbubble-ellipses-outline"></ion-icon>
@@ -969,7 +972,7 @@
 <div class="a11y-chat-panel" id="a11yChatPanel" hidden>
   <div class="a11y-chat-header">
     <span>Accessible Travel Assistant</span>
-    <button type="button" id="a11yChatClose" aria-label="Close assistant" onclick="document.getElementById('a11yChatPanel').hidden = true;">&times;</button>
+    <button type="button" id="a11yChatClose" aria-label="Close assistant">&times;</button>
   </div>
   <div class="a11y-chat-messages" id="a11yChatMessages" aria-live="polite">
     <div class="a11y-chat-msg bot">Hi! Ask me about wheelchair access, pet-friendly stays, quiet time slots, strict-veg food, or sign-language guides.</div>

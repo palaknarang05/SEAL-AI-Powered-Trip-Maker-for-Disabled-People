@@ -15,7 +15,36 @@ function announce(msg) {
   if (a11yStatus) a11yStatus.textContent = msg;
 }
 
-/* ---------- High contrast ---------- */
+/* ---------- Keep hero clearance in sync with the real header height ----------
+   .header-top is position:absolute and .navbar is position:fixed (both by the
+   base template's own design, to overlay the hero image), so neither
+   contributes to normal document flow — a simple height read on a wrapper
+   element can't be trusted. Measuring each header piece's real rendered
+   bottom edge (via getBoundingClientRect, which reflects true layout
+   regardless of position:absolute/fixed) avoids hard-coding a guess that
+   silently goes stale — which is exactly what hid the SEAL wordmark under
+   the nav after the accessibility bar was added on top of the header. */
+function setSealHeaderHeightVar() {
+  const candidates = [
+    document.querySelector('.a11y-bar'),
+    document.querySelector('.header-top'),
+    document.querySelector('.header-bottom'),
+  ].filter(Boolean);
+
+  const maxBottom = candidates.reduce((max, el) => {
+    return Math.max(max, el.getBoundingClientRect().bottom);
+  }, 0);
+
+  document.documentElement.style.setProperty('--seal-header-height', `${Math.max(maxBottom, 0)}px`);
+}
+setSealHeaderHeightVar();
+window.addEventListener('resize', setSealHeaderHeightVar);
+window.addEventListener('load', setSealHeaderHeightVar); // fonts can still be swapping in at DOMContentLoaded
+// ion-icon is a web component that upgrades asynchronously and can nudge
+// header height slightly after first paint — one more late check catches that.
+setTimeout(setSealHeaderHeightVar, 600);
+
+
 const contrastBtn = document.getElementById('a11yContrastToggle');
 if (contrastBtn) {
   contrastBtn.addEventListener('click', () => {
@@ -41,44 +70,88 @@ document.getElementById('a11yFontDecrease')?.addEventListener('click', () => {
   announce(`Text size ${100 + fontStep * 10}%`);
 });
 
-/* ---------- Voice search ---------- */
+/* ---------- Voice search ----------
+   Shared helper used by both the toolbar mic and the hero mic, so
+   there's one robust implementation instead of two copies that can
+   drift out of sync. Retargets speech into heroSearchInput, since
+   the old #cityName field (from the removed weather widget) no
+   longer exists on the page. */
 const voiceBtn = document.getElementById('a11yVoiceSearch');
-const cityInput = document.getElementById('cityName');
 const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-if (voiceBtn) {
+function setupVoiceButton(button, targetInput) {
+  if (!button) return;
+
   if (!SpeechRecognitionAPI) {
-    voiceBtn.disabled = true;
-    voiceBtn.title = 'Voice search is not supported in this browser';
-  } else {
-    const recognition = new SpeechRecognitionAPI();
-    recognition.lang = 'en-IN';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    voiceBtn.addEventListener('click', () => {
-      voiceBtn.setAttribute('aria-pressed', 'true');
-      announce('Listening…');
-      recognition.start();
-    });
-
-    recognition.addEventListener('result', (event) => {
-      const transcript = event.results[0][0].transcript;
-      if (cityInput) {
-        cityInput.value = transcript;
-        announce(`Heard: ${transcript}`);
-      }
-    });
-
-    recognition.addEventListener('end', () => {
-      voiceBtn.setAttribute('aria-pressed', 'false');
-    });
-
-    recognition.addEventListener('error', (event) => {
-      voiceBtn.setAttribute('aria-pressed', 'false');
-      announce(`Voice search error: ${event.error}`);
-    });
+    button.disabled = true;
+    button.title = 'Voice search is not supported in this browser';
+    return;
   }
+
+  const recognition = new SpeechRecognitionAPI();
+  recognition.lang = 'en-IN';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  let listening = false;
+  let safetyTimer = null;
+
+  function stopListening() {
+    listening = false;
+    button.setAttribute('aria-pressed', 'false');
+    if (safetyTimer) {
+      clearTimeout(safetyTimer);
+      safetyTimer = null;
+    }
+  }
+
+  button.addEventListener('click', () => {
+    if (listening) {
+      recognition.stop();
+      return;
+    }
+    try {
+      recognition.start();
+      listening = true;
+      button.setAttribute('aria-pressed', 'true');
+      announce('Listening…');
+      // Some browsers/environments never fire 'end' or 'error' if the
+      // speech service can't be reached (e.g. no network). Force a
+      // reset after 8s so the mic never gets stuck "listening" forever.
+      safetyTimer = setTimeout(() => {
+        if (listening) {
+          recognition.stop();
+          stopListening();
+          announce('No speech detected — check your microphone or try typing instead.');
+        }
+      }, 8000);
+    } catch (err) {
+      // start() throws if called while already running/starting
+      stopListening();
+      announce('Voice search could not start — try again.');
+    }
+  });
+
+  recognition.addEventListener('result', (event) => {
+    const transcript = event.results[0][0].transcript;
+    if (targetInput) {
+      targetInput.value = transcript;
+      targetInput.focus();
+    }
+    announce(`Heard: ${transcript}`);
+  });
+
+  recognition.addEventListener('end', stopListening);
+
+  recognition.addEventListener('error', (event) => {
+    stopListening();
+    const reason = event.error === 'not-allowed' || event.error === 'service-not-allowed'
+      ? 'Microphone permission was blocked.'
+      : event.error === 'network'
+        ? 'Voice search needs an internet connection.'
+        : `Voice search error: ${event.error}`;
+    announce(reason);
+  });
 }
 
 /* ---------- Read-aloud ---------- */
@@ -238,3 +311,146 @@ chatForm?.addEventListener('submit', async (e) => {
     addChatMessage('Sorry, I could not reach the assistant right now.', 'bot');
   }
 });
+
+/* ---------- Dark mode ---------- */
+const darkBtn = document.getElementById('a11yDarkToggle');
+function setTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+  else document.documentElement.removeAttribute('data-theme');
+  darkBtn?.setAttribute('aria-pressed', String(dark));
+  try { localStorage.setItem('seal-theme', dark ? 'dark' : 'light'); } catch (e) {}
+}
+if (darkBtn) {
+  // reflect whatever the head-inline script already applied, so the button state matches on load
+  darkBtn.setAttribute('aria-pressed', String(document.documentElement.getAttribute('data-theme') === 'dark'));
+  darkBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    setTheme(!isDark);
+    announce(!isDark ? 'Dark mode on' : 'Dark mode off');
+  });
+}
+
+/* ---------- Scroll-to buttons (hero CTAs, header search icon) ---------- */
+document.querySelectorAll('[data-scroll-to]').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const target = document.querySelector(btn.dataset.scrollTo);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+/* ---------- Hero search: submits into the trip-finder filters ---------- */
+const heroSearchForm = document.getElementById('heroSearchForm');
+const heroSearchInput = document.getElementById('heroSearchInput');
+heroSearchForm?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  document.querySelector('#accessible-trips')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // trip data is small and local, so a simple client-side name filter is enough for Phase 1
+  const q = heroSearchInput.value.trim().toLowerCase();
+  if (!q || !tripGrid) return;
+  const cards = tripGrid.querySelectorAll('.a11y-trip-card');
+  cards.forEach((card) => {
+    const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
+    card.style.display = name.includes(q) ? '' : 'none';
+  });
+});
+
+/* ---------- Hero voice search button (shares setupVoiceButton with the toolbar mic) ---------- */
+const heroVoiceBtn = document.getElementById('heroVoiceBtn');
+setupVoiceButton(voiceBtn, heroSearchInput);
+setupVoiceButton(heroVoiceBtn, heroSearchInput);
+
+/* ---------- Hero "Ask The Assistant" button ---------- */
+document.getElementById('heroAskAssistant')?.addEventListener('click', () => toggleChat(true));
+
+/* ============================================================
+   Entrance animations — SEAL wordmark, hero reveal, scroll reveal
+   Skipped entirely for prefers-reduced-motion (see accessibility.css
+   for why): those users see the final, fully-visible layout with
+   nothing moving.
+   ============================================================ */
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================================================
+   Entrance animations — Typewriter SEAL Logo & Hero Reveal
+   ============================================================ */
+function typewriteSealLogo() {
+  const target = document.getElementById('sealTypewriter');
+  if (!target) return;
+
+  const text = 'SEAL';
+
+  if (prefersReducedMotion) {
+    target.textContent = text;
+    document.querySelector('.seal-cursor')?.remove();
+    revealHeroContent(0);
+    return;
+  }
+
+  let index = 0;
+  function typeChar() {
+    if (index < text.length) {
+      target.textContent += text.charAt(index);
+      index++;
+      setTimeout(typeChar, 180);
+    } else {
+      // Reveal the rest of the hero once typing completes
+      setTimeout(() => {
+        revealHeroContent(200);
+      }, 250);
+    }
+  }
+
+  // Brief pause before typing begins
+  setTimeout(typeChar, 300);
+}
+
+function revealHeroContent(startDelay = 0) {
+  const items = Array.from(document.querySelectorAll('.hero-reveal'));
+  if (!items.length) return;
+
+  if (prefersReducedMotion) {
+    items.forEach((el) => el.classList.add('hero-reveal-in'));
+    return;
+  }
+
+  items.sort((a, b) => Number(a.dataset.revealOrder || 0) - Number(b.dataset.revealOrder || 0));
+  items.forEach((el, i) => {
+    setTimeout(() => el.classList.add('hero-reveal-in'), startDelay + i * 120);
+  });
+}
+
+// Initialize
+typewriteSealLogo();
+
+function setupScrollReveal() {
+  const targets = document.querySelectorAll('.package-card, .a11y-trip-card');
+  if (!targets.length) return;
+
+  if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+    targets.forEach((el) => el.classList.add('scroll-reveal-in'));
+    return;
+  }
+
+  targets.forEach((el) => el.classList.add('scroll-reveal'));
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('scroll-reveal-in');
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.15 }
+  );
+
+  targets.forEach((el) => observer.observe(el));
+}
+
+animateSealLogo();
+revealHeroContent();
+// Trip cards render async from the API, so give the grid a moment before
+// wiring up scroll-reveal on both the static package cards and the trip cards.
+setTimeout(setupScrollReveal, 400);

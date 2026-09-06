@@ -1,29 +1,10 @@
-'use strict';
 
-/* ============================================================
-   SEAL — Accessibility layer (Review 1 prototype)
-   - High contrast toggle
-   - Font-size steps
-   - Voice search (Web Speech API: SpeechRecognition)
-   - Read-aloud (Web Speech API: SpeechSynthesis)
-   - Accessible trip grid (fetches /api/destinations)
-   - Assistant chat widget (fetches /api/assistant)
-   ============================================================ */
 
 const a11yStatus = document.getElementById('a11yStatus');
 function announce(msg) {
   if (a11yStatus) a11yStatus.textContent = msg;
 }
 
-/* ---------- Keep hero clearance in sync with the real header height ----------
-   .header-top is position:absolute and .navbar is position:fixed (both by the
-   base template's own design, to overlay the hero image), so neither
-   contributes to normal document flow — a simple height read on a wrapper
-   element can't be trusted. Measuring each header piece's real rendered
-   bottom edge (via getBoundingClientRect, which reflects true layout
-   regardless of position:absolute/fixed) avoids hard-coding a guess that
-   silently goes stale — which is exactly what hid the SEAL wordmark under
-   the nav after the accessibility bar was added on top of the header. */
 function setSealHeaderHeightVar() {
   const candidates = [
     document.querySelector('.a11y-bar'),
@@ -437,7 +418,7 @@ function typewriteSealLogo() {
   const target = document.getElementById('sealTypewriter');
   if (!target) return;
 
-  const text = 'SEAL';
+  const text = 'Explore Without Limits.';
 
   if (prefersReducedMotion) {
     target.textContent = text;
@@ -508,7 +489,7 @@ function setupScrollReveal() {
   targets.forEach((el) => observer.observe(el));
 }
 
-animateSealLogo();
+
 revealHeroContent();
 // Trip cards render async from the API, so give the grid a moment before
 // wiring up scroll-reveal on both the static package cards and the trip cards.
@@ -577,3 +558,75 @@ inquiryForm?.addEventListener('submit', async (e) => {
     inquiryStatus.textContent = 'Could not send your inquiry right now — please try again in a moment.';
   }
 });
+
+/* ============================================================
+   Stats strip count-up + hero mouse-parallax
+   Both skip their motion for prefers-reduced-motion (see the
+   prefersReducedMotion flag set earlier) — numbers just show
+   their final value instantly, and the hero doesn't shift at all.
+   ============================================================ */
+function animateStatNumbers() {
+  const numbers = document.querySelectorAll('.seal-stat-number');
+  if (!numbers.length) return;
+
+  if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+    numbers.forEach((el) => {
+      const target = Number(el.dataset.countTo || 0);
+      el.textContent = target + (el.dataset.suffix || '');
+    });
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const target = Number(el.dataset.countTo || 0);
+        const suffix = el.dataset.suffix || '';
+        const duration = 900;
+        const start = performance.now();
+
+        function tick(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+          el.textContent = Math.round(target * eased) + suffix;
+          if (progress < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+        observer.unobserve(el);
+      });
+    },
+    { threshold: 0.4 }
+  );
+
+  numbers.forEach((el) => observer.observe(el));
+}
+animateStatNumbers();
+
+/* ---------- Subtle hero mouse-parallax ---------- */
+function setupHeroParallax() {
+  const hero = document.getElementById('home');
+  if (!hero || prefersReducedMotion) return;
+  // Skip on touch devices — there's no meaningful "mouse position" there
+  if (window.matchMedia('(pointer: coarse)').matches) return;
+
+  const targets = hero.querySelectorAll('.seal-logo, .hero-eyebrow, .hero-title');
+  targets.forEach((el) => el.classList.add('hero-parallax'));
+
+  hero.addEventListener('mousemove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+
+    targets.forEach((el, i) => {
+      const strength = 6 + i * 2; // deeper elements move a touch more
+      el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+    });
+  });
+
+  hero.addEventListener('mouseleave', () => {
+    targets.forEach((el) => { el.style.transform = 'translate(0, 0)'; });
+  });
+}
+setupHeroParallax();

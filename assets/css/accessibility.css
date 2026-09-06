@@ -1,6 +1,4 @@
-/* ============================================================
-   SEAL — Accessibility layer styles (Review 1 prototype)
-   ============================================================ */
+
 
 :root {
   --a11y-primary: #1d4ed8;
@@ -413,37 +411,52 @@ input:focus-visible {
 }
 
 /* Center aligned hero layout */
+/* --- THE ULTIMATE HERO FIX (RESTORES IMAGE & FORCES LEFT ALIGN) --- */
+
+/* 1. Force the background image back with a dark overlay so text is readable */
 .hero {
-  min-height: 100vh;
-  padding-top: 160px;
-  padding-bottom: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("../images/hero-banner.jpg") center/cover no-repeat !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding-top: 0 !important;
 }
 
+/* 2. Bruteforce the container to the left side */
 .hero .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 800px;
-  margin: 0 auto;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+  margin: 0 0 0 10% !important; /* Cinematic 10% left margin */
+  max-width: 800px !important;
+  width: 100% !important;
 }
 
-/* ---------- Typewriter SEAL Title ---------- */
-.seal-logo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--ff-montserrat, 'Montserrat', sans-serif);
-  font-weight: 800;
-  font-size: clamp(3rem, 7vw, 5rem);
-  letter-spacing: 0.12em;
-  color: #fff;
-  margin-bottom: 12px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
-  min-height: 1.2em;
+/* 3. Strip all centering from the text */
+.hero .seal-logo,
+.hero-eyebrow,
+.hero-text {
+  text-align: left !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+/* 4. Force buttons and badges to align left */
+.hero-badges,
+.hero .btn-group {
+  display: flex !important;
+  justify-content: flex-start !important;
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+/* 5. Ensure the massive typography applies */
+.hero .seal-logo {
+ font-size: clamp(5rem, 4vw, 5.5rem) !important;
+  line-height: 1.1 !important;
+  margin-bottom: 15px !important;
 }
 
 .seal-cursor {
@@ -684,32 +697,15 @@ html * {
   }
 }
 
-/* ---------- Hero overlap fix ----------
-   The base template's .hero used a fixed min-height with
-   place-items:center, sized for a two-line heading + one button
-   row. Our badges + search bar make the content taller, so it
-   was overflowing the hero box and overlapping the section below. */
+
 .hero {
   min-height: auto;
-  /* .header is position:absolute and overlays the hero image by design,
-     so the hero can't just flow below it in normal document layout —
-     it needs enough top padding to actually clear the header's real
-     height. That height changed when the accessibility toolbar row was
-     added, so it's measured in JS (setSealHeaderHeightVar) instead of
-     guessed as a fixed number here; --seal-header-height is the
-     fallback for the instant before JS runs. */
+
   padding-top: calc(var(--seal-header-height, 260px) + 24px);
   padding-bottom: 70px;
 }
 
-/* ============================================================
-   Entrance animations — SEAL wordmark, hero reveal, scroll reveal
-   All of this is skipped entirely for prefers-reduced-motion,
-   since sudden or sustained motion can trigger discomfort for
-   people with vestibular disorders, migraines, or certain
-   cognitive conditions. Reduced-motion users see the final state
-   immediately, with nothing moving.
-   ============================================================ */
+
 
 .seal-logo {
   display: flex;
@@ -1034,4 +1030,163 @@ html * {
   color: #146c43;
   margin-top: 14px;
   min-height: 1.1em;
+}
+
+/* ============================================================
+   Visual polish pass: hero duotone overlay, soft background blobs,
+   animated stats strip, card hover interactivity
+   ============================================================ */
+
+/* ---------- Hero: brand-colored duotone instead of plain black overlay ---------- */
+.hero {
+  position: relative;
+  isolation: isolate;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero > .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Soft floating background blobs (purely decorative) ---------- */
+.a11y-finder,
+.popular {
+  position: relative;
+  overflow: hidden;
+}
+
+.a11y-finder::before,
+.a11y-finder::after,
+.popular::before,
+.popular::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.16;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.a11y-finder::before {
+  width: 320px; height: 320px;
+  background: var(--a11y-primary);
+  top: -120px; left: -100px;
+  animation: sealBlobFloat 16s ease-in-out infinite;
+}
+
+.a11y-finder::after {
+  width: 260px; height: 260px;
+  background: #0d9488;
+  bottom: -100px; right: -80px;
+  animation: sealBlobFloat 20s ease-in-out infinite reverse;
+}
+
+.popular::before {
+  width: 280px; height: 280px;
+  background: #0d9488;
+  top: -110px; right: -90px;
+  animation: sealBlobFloat 18s ease-in-out infinite;
+}
+
+.popular::after {
+  width: 240px; height: 240px;
+  background: var(--a11y-primary);
+  bottom: -90px; left: -80px;
+  animation: sealBlobFloat 22s ease-in-out infinite reverse;
+}
+
+.a11y-finder > .container,
+.popular > .container {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes sealBlobFloat {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(25px, 20px); }
+}
+
+/* ---------- Animated stats strip ---------- */
+.seal-stats {
+  background: linear-gradient(135deg, #0b1220, #0f2438);
+  padding: 44px 0;
+}
+
+.seal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  text-align: center;
+}
+
+.seal-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.seal-stat-number {
+  font-family: var(--ff-montserrat, 'Montserrat', sans-serif);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  color: #fff;
+}
+
+.seal-stat-label {
+  font-size: 0.8rem;
+  color: #9fb8d4;
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .seal-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 26px;
+  }
+}
+
+/* ---------- Card hover interactivity (package + popular cards) ---------- */
+.package-card,
+.popular-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.package-card:hover,
+.package-card:focus-within,
+.popular-card:hover,
+.popular-card:focus-within {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 34px rgba(6, 90, 130, 0.18);
+}
+
+/* ---------- Hero mouse-parallax target (JS applies transform here) ---------- */
+.hero-parallax {
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a11y-finder::before,
+  .a11y-finder::after,
+  .popular::before,
+  .popular::after {
+    animation: none !important;
+  }
+  .hero-parallax {
+    transform: none !important;
+    transition: none !important;
+  }
+  .package-card,
+  .popular-card {
+    transition: none !important;
+  }
 }

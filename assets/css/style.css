@@ -2,38 +2,34 @@
  * #style.css
 \*-----------------------------------*/
 
-/**
- * copyright 2022 codewithsadee
- */
 
-
-
-
-
-/*-----------------------------------*\
- * #CUSTOM PROPERTY
-\*-----------------------------------*/
 
 :root {
 
-  /**
-   * colors
-   */
 
-  --united-nations-blue: hsl(214, 56%, 58%);
-  --bright-navy-blue: hsl(214, 57%, 51%);
-  --spanish-gray: hsl(0, 0%, 60%);
-  --black-coral: hsl(225, 8%, 42%);
-  --oxford-blue: hsl(208, 97%, 12%);
-  --yale-blue: hsl(214, 72%, 33%);
-  --blue-ncs: hsl(197, 100%, 36%);
-  --gunmetal: hsl(206, 34%, 20%);
-  --gainsboro: hsl(0, 0%, 88%);
-  --cultured: hsl(0, 0%, 98%);
-  --white: hsl(0, 0%, 100%);
-  --black: hsl(0, 0%, 0%);
-  --onyx: hsl(0, 0%, 25%);
-  --jet: hsl(0, 0%, 20%);
+  --united-nations-blue: hsl(190, 90%, 25%);
+
+    /* Primary vibrant teal for search bar & buttons */
+    --bright-navy-blue: hsl(190, 80%, 35%);
+
+    /* Darker teal for button hovers */
+    --yale-blue: hsl(190, 90%, 20%);
+
+    /* Accent color to match */
+    --blue-ncs: hsl(190, 80%, 35%);
+
+    /* Sleek dark charcoal for the top nav and footer */
+    --gunmetal: hsl(210, 25%, 12%);
+
+    /* --- Keep these exactly as they are --- */
+    --spanish-gray: hsl(0, 0%, 60%);
+    --black-coral: hsl(225, 8%, 42%);
+    --gainsboro: hsl(0, 0%, 88%);
+    --cultured: hsl(0, 0%, 98%);
+    --white: hsl(0, 0%, 100%);
+    --black: hsl(0, 0%, 0%);
+    --onyx: hsl(0, 0%, 25%);
+    --jet: hsl(0, 0%, 20%);
 
   /**
    * typography
@@ -120,11 +116,29 @@ html {
   font-family: var(--ff-poppins);
   scroll-behavior: smooth;
 }
+body {
+  background-color: #ffffff !important;
+  background-image:
+    radial-gradient(50% 100% at 0% 50%, rgba(224, 242, 254, 0.9) 0%, transparent 100%),
+    radial-gradient(50% 100% at 100% 50%, rgba(224, 242, 254, 0.9) 0%, transparent 100%) !important;
+  background-attachment: fixed !important;
+}
 
-body { background: var(--white); }
+/* 2. Make the white sections transparent so the body gradient shows through */
+.a11y-finder,
+.popular,
+.package,
+.gallery {
+  background-color: transparent !important;
+}
 
-
-
+/* 3. Keep the cards looking crisp with a slight glassy white background */
+.package-card,
+.popular-card .card-content {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
 
 
 /*-----------------------------------*\
@@ -208,13 +222,75 @@ body { background: var(--white); }
  * #HEADER
 \*-----------------------------------*/
 
+
+
+/* 1. Make the header transparent and sit perfectly over the image */
 .header {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding-top: 61px;
-  z-index: 4;
+  position: absolute !important;
+  top: 50px !important; /* Keeps it just below your accessibility toolbar */
+  left: 0 !important;
+  width: 100% !important;
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important; /* Subtle glass line */
+  padding: 0 !important;
+  z-index: 100 !important;
+}
+
+/* 2. Space Left, Center, and Right perfectly */
+.header-inner {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 15px 0 !important;
+  width: 100% !important;
+}
+
+/* 3. Style the Navigation Links */
+.desktop-nav .navbar-list {
+  display: flex !important;
+  gap: 35px !important;
+  margin: 0 !important;
+}
+
+.desktop-nav .navbar-link {
+  color: #ffffff !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.5px !important;
+  transition: opacity 0.3s ease !important;
+}
+
+.desktop-nav .navbar-link:hover {
+  opacity: 0.6 !important;
+}
+
+/* 4. Style the Right-Side Icons */
+.header-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 15px !important;
+}
+
+/* Turns the Search and Sign-In buttons into sleek circles */
+.icon-btn {
+  background: transparent !important;
+  color: #ffffff !important;
+  font-size: 1.3rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 50% !important;
+  width: 42px !important;
+  height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  transform: scale(1.05) !important;
 }
 
 .header-top {
@@ -374,27 +450,61 @@ body { background: var(--white); }
  * #HERO
 \*-----------------------------------*/
 
+/* --- ULTRA-CLEAN ABU DHABI HERO (LEFT ALIGNED) --- */
+
+/* 1. Make the hero full screen and pull content to the left */
 .hero {
-  background-image: url("../images/hero-banner.jpg");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  background-color: hsla(0, 0%, 0%, 0.7);
-  background-blend-mode: overlay;
-  display: grid;
-  place-items: center;
-  min-height: 600px;
-  text-align: center;
-  padding-top: 125px;
+  min-height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding-top: 0 !important;
+}
+
+/* 2. Create the cinematic left margin (Breathing Room) */
+.hero .container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important; /* Forces everything to the left edge */
+  text-align: left !important;
+  margin: 0 0 0 10% !important; /* 10% space on the left side */
+  max-width: 800px !important;
+}
+
+/* 3. Make SEAL massive and bold */
+.hero .seal-logo {
+  font-size: clamp(5rem, 4vw, 5.5rem) !important;
+  margin-bottom: 10px !important;
+  margin-left: 0 !important;
+  line-height: 1.1 !important;
+  text-shadow: 2px 4px 15px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 4. Align the subtitle and fix sizing */
+.hero-text {
+  font-size: 1.2rem !important;
+  text-align: left !important;
+  margin-left: 0 !important;
+  max-width: 600px !important;
+  text-shadow: 1px 2px 8px rgba(0, 0, 0, 0.5) !important;
+  margin-bottom: 25px !important;
+}
+
+/* 5. Align the badges and buttons neatly to the left */
+.hero-badges,
+.hero .btn-group {
+  justify-content: flex-start !important;
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+.hero-badges {
+  margin-bottom: 35px !important;
 }
 
 .hero-title { margin-bottom: 20px; }
 
-.hero-text {
-  color: var(--white);
-  font-size: var(--fs-5);
-  margin-bottom: 40px;
-}
+
 
 .btn-group {
   display: flex;
@@ -1202,10 +1312,48 @@ address {
    * HERO
    */
 
-  .hero .container { max-width: 740px; }
 
 
+ /* --- ULTRA-CLEAN ABU DHABI HERO (DESKTOP FIX) --- */
 
+   /* 1. Force the image back with a dark overlay, pull content left */
+   .hero {
+     min-height: 100vh !important;
+     display: flex !important;
+     align-items: center !important;
+     justify-content: flex-start !important;
+     padding-top: 0 !important;
+     background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("../images/hero-banner.jpg") center/cover no-repeat !important;
+   }
+
+   /* 2. Create the cinematic 10% left margin */
+   .hero .container {
+     display: flex !important;
+     flex-direction: column !important;
+     align-items: flex-start !important;
+     text-align: left !important;
+     margin: 0 0 0 10% !important;
+     max-width: 800px !important;
+     width: 100% !important;
+   }
+
+   /* 3. Strip all center-alignment from the typography */
+   .hero .seal-logo,
+   .hero-eyebrow,
+   .hero-text {
+     text-align: left !important;
+     margin-left: 0 !important;
+     margin-right: auto !important;
+   }
+
+   /* 4. Align badges and buttons neatly to the left edge */
+   .hero-badges,
+   .hero .btn-group {
+     display: flex !important;
+     justify-content: flex-start !important;
+     margin-left: 0 !important;
+     width: 100% !important;
+   }
   /**
    * TOUR SEARCH
    */

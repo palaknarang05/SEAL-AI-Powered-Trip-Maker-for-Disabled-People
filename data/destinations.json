@@ -1,0 +1,92 @@
+[
+  {
+    "id": "taj-mahal",
+    "name": "Taj Mahal, Agra",
+    "image": "assets/images/taj.jpeg",
+    "price": 12999,
+    "description": "Guided sunrise tour of the Taj Mahal with step-free ramps and wheelchair rental on site.",
+    "tags": {
+      "wheelchairAccess": true,
+      "petFriendly": false,
+      "sensoryFriendly": false,
+      "strictVeg": true,
+      "signLanguageGuide": true
+    },
+    "nearestHospital": "SN Medical College, Agra (4.2 km)"
+  },
+  {
+    "id": "red-fort",
+    "name": "Red Fort, Delhi",
+    "image": "assets/images/redfort.jpg",
+    "price": 8499,
+    "description": "Heritage walk with ramped entry points and accessible restrooms near Lahori Gate.",
+    "tags": {
+      "wheelchairAccess": true,
+      "petFriendly": true,
+      "sensoryFriendly": false,
+      "strictVeg": true,
+      "signLanguageGuide": false
+    },
+    "nearestHospital": "LNJP Hospital, Delhi (3.1 km)"
+  },
+  {
+    "id": "mahakal-ujjain",
+    "name": "Mahakaleshwar, Ujjain",
+    "image": "assets/images/ujjainmahakal.webp",
+    "price": 6999,
+    "description": "Early low-crowd darshan slot for sensory-sensitive travelers, with volunteer assistance.",
+    "tags": {
+      "wheelchairAccess": true,
+      "petFriendly": false,
+      "sensoryFriendly": true,
+      "strictVeg": true,
+      "signLanguageGuide": true
+    },
+    "nearestHospital": "District Hospital, Ujjain (2.5 km)"
+  },
+  {
+    "id": "varanasi-ghats",
+    "name": "Ghats of Banaras",
+    "image": "assets/images/banaras.jpg",
+    "price": 9499,
+    "description": "Boat ride with ramped boarding jetty and quiet-hour slots away from peak crowds.",
+    "tags": {
+      "wheelchairAccess": false,
+      "petFriendly": false,
+      "sensoryFriendly": true,
+      "strictVeg": true,
+      "signLanguageGuide": false
+    },
+    "nearestHospital": "BHU Trauma Centre, Varanasi (5.0 km)"
+  },
+  {
+    "id": "goa-beaches",
+    "name": "Goa Beaches",
+    "image": "assets/images/goa.jpg",
+    "price": 15999,
+    "description": "Beach resort with wheelchair-friendly boardwalks and pet-friendly cottages.",
+    "tags": {
+      "wheelchairAccess": true,
+      "petFriendly": true,
+      "sensoryFriendly": true,
+      "strictVeg": false,
+      "signLanguageGuide": false
+    },
+    "nearestHospital": "Goa Medical College, Bambolim (6.8 km)"
+  },
+  {
+    "id": "udaipur-city-palace",
+    "name": "City Palace, Udaipur",
+    "image": "assets/images/udpcitypalace.jpg",
+    "price": 11499,
+    "description": "Lakeside palace tour with elevator access to key galleries and strict-veg thali stops.",
+    "tags": {
+      "wheelchairAccess": true,
+      "petFriendly": false,
+      "sensoryFriendly": false,
+      "strictVeg": true,
+      "signLanguageGuide": true
+    },
+    "nearestHospital": "MB Government Hospital, Udaipur (3.7 km)"
+  }
+]

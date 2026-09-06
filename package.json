@@ -1,0 +1,13 @@
+{
+  "name": "seal-review1",
+  "version": "0.1.0",
+  "description": "SEAL - AI-Powered Trip Maker for Disabled People (Phase 1 / Review 1 build)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2"
+  }
+}

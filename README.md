@@ -11,7 +11,6 @@ The site works fully without any setup — the LLM assistant and itinerary plann
 run in a rule-based fallback mode by default. To enable the **real** LLM:
 
 ```bash
-export ANTHROPIC_API_KEY=your-key-here
 npm start
 ```
 The server logs on startup which mode it's running in.
@@ -33,8 +32,6 @@ assistance-request + trip-inquiry logging to `data/`.
 - Real WebAuthn passkey login, replacing the old face-login redirect
   (`/api/passkey/*`)
 
-See `REVIEW2_REPORT.md` for the novelty justification and what's still a
-documented next step (payment gateway, etc).
 
 ## API
 - `GET /api/destinations?wheelchair=true&sensory=true&sort=price_asc...`

@@ -227,7 +227,7 @@ body {
 /* 1. Make the header transparent and sit perfectly over the image */
 .header {
   position: absolute !important;
-  top: 50px !important; /* Keeps it just below your accessibility toolbar */
+  top: 0 !important; /* Accessibility toolbar is now a floating widget, not a bar above the header */
   left: 0 !important;
   width: 100% !important;
   background: transparent !important;

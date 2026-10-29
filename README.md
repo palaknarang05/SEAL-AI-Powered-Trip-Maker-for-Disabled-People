@@ -1,4 +1,4 @@
-# SEAL — AI-Powered Trip Maker for Disabled People (Review 1 build)
+# SEAL — AI-Powered Trip Maker for Disabled People (Review 2 build)
 
 ## Run it
 ```bash
@@ -7,14 +7,41 @@ npm start
 ```
 Open http://localhost:3000
 
-## Review 1 / Phase 1
-- Accessibility toolbar: high contrast, text size, voice search, read-aloud
-- Accessible Trip Finder: filterable trip cards (wheelchair/sensory/veg/pet/sign-language)
-- Assistant chat widget (rule-based stub, calls `/api/assistant`)
-- Assistance-request API for checkout (`/api/assistance-request`)
+The site works fully without any setup — the LLM assistant and itinerary planner
+run in a rule-based fallback mode by default. To enable the **real** LLM:
+
+```bash
+export ANTHROPIC_API_KEY=your-key-here
+npm start
+```
+The server logs on startup which mode it's running in.
+
+Passkey login (WebAuthn) needs a secure context and a real device — see
+`REVIEW2_REPORT.md` §4 before demoing it.
+
+## What's here
+
+**Review 1:** accessibility widget (contrast, text size, voice search,
+read-aloud, dark mode), Accessible Trip Finder with filters + sort, save-for-later,
+assistance-request + trip-inquiry logging to `data/`.
+
+**Review 2 (new):**
+- Real LLM integration for the assistant (`/api/assistant`)
+- **AI Itinerary Planner** — energy-paced, personalized multi-day trip plans
+  grounded on the real destinations dataset (`/api/itinerary`)
+- **Community trust score** — travelers confirm listing accuracy (`/api/verify`)
+- Real WebAuthn passkey login, replacing the old face-login redirect
+  (`/api/passkey/*`)
+
+See `REVIEW2_REPORT.md` for the novelty justification and what's still a
+documented next step (payment gateway, etc).
 
 ## API
-- `GET /api/destinations?wheelchair=true&sensory=true...`
+- `GET /api/destinations?wheelchair=true&sensory=true&sort=price_asc...`
 - `GET /api/destinations/:id`
 - `POST /api/assistance-request` `{ name, email, destinationId, needsAssistance, notes }`
+- `POST /api/contact` `{ destination, people, checkin, checkout }`
 - `POST /api/assistant` `{ message }`
+- `POST /api/itinerary` `{ mobility, days, energyLevel, wheelchair, sensory, veg, signLanguage }`
+- `POST /api/verify` `{ destinationId, rating, note }`
+- `POST /api/passkey/register-options` / `/register-verify` / `/login-options` / `/login-verify`

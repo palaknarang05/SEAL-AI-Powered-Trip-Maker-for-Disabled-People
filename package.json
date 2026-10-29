@@ -1,12 +1,14 @@
 {
-  "name": "seal-review1",
-  "version": "0.1.0",
-  "description": "SEAL - AI-Powered Trip Maker for Disabled People (Phase 1 / Review 1 build)",
+  "name": "seal-review2",
+  "version": "0.2.0",
+  "description": "SEAL - AI-Powered Trip Maker for Disabled People (Review 2 build)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "@simplewebauthn/server": "^14.0.2",
+    "better-sqlite3": "^13.0.3",
     "body-parser": "^1.20.2",
     "express": "^4.19.2"
   }

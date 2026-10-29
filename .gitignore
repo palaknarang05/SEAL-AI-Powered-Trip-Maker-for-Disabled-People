@@ -1,4 +1,12 @@
 node_modules/
-node_modules/
 .DS_Store
 .idea/
+.env
+data/seal.db
+data/seal.db-*
+*.bak
+*.log
+*.pid
+
+data/cab-bookings.json
+data/verifications.json

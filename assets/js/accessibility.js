@@ -5,24 +5,37 @@ function announce(msg) {
   if (a11yStatus) a11yStatus.textContent = msg;
 }
 
+/* ---------- Accessibility widget open/close ---------- */
+const a11yWidgetToggle = document.getElementById('a11yWidgetToggle');
+const a11yWidgetPanel = document.getElementById('a11yWidgetPanel');
+const a11yWidgetClose = document.getElementById('a11yWidgetClose');
+
+function toggleA11yWidget(open) {
+  if (!a11yWidgetPanel || !a11yWidgetToggle) return;
+  a11yWidgetPanel.hidden = !open;
+  a11yWidgetToggle.setAttribute('aria-expanded', String(open));
+}
+
+a11yWidgetToggle?.addEventListener('click', () => toggleA11yWidget(a11yWidgetPanel.hidden));
+a11yWidgetClose?.addEventListener('click', () => toggleA11yWidget(false));
+
+document.addEventListener('click', (e) => {
+  if (a11yWidgetPanel && !a11yWidgetPanel.hidden
+      && !a11yWidgetPanel.contains(e.target)
+      && !a11yWidgetToggle.contains(e.target)) {
+    toggleA11yWidget(false);
+  }
+});
+
 function setSealHeaderHeightVar() {
-  const candidates = [
-    document.querySelector('.a11y-bar'),
-    document.querySelector('.header-top'),
-    document.querySelector('.header-bottom'),
-  ].filter(Boolean);
-
-  const maxBottom = candidates.reduce((max, el) => {
-    return Math.max(max, el.getBoundingClientRect().bottom);
-  }, 0);
-
-  document.documentElement.style.setProperty('--seal-header-height', `${Math.max(maxBottom, 0)}px`);
+  // .header is a single clean row now; measure its own rendered bottom edge.
+  const header = document.querySelector('.header');
+  const bottom = header ? header.getBoundingClientRect().bottom : 90;
+  document.documentElement.style.setProperty('--seal-header-height', `${Math.max(bottom, 0)}px`);
 }
 setSealHeaderHeightVar();
 window.addEventListener('resize', setSealHeaderHeightVar);
 window.addEventListener('load', setSealHeaderHeightVar); // fonts can still be swapping in at DOMContentLoaded
-// ion-icon is a web component that upgrades asynchronously and can nudge
-// header height slightly after first paint — one more late check catches that.
 setTimeout(setSealHeaderHeightVar, 600);
 
 
@@ -260,6 +273,12 @@ function renderTrips(trips) {
             <p>${trip.description}</p>
             <div class="a11y-tag-list">${activeTags}</div>
             <p class="a11y-hospital"><ion-icon name="medkit-outline"></ion-icon> ${trip.nearestHospital}</p>
+            ${trip.trust
+              ? `<span class="a11y-trust"><ion-icon name="shield-checkmark-outline"></ion-icon> ${trip.trust.average}/5 trust score (${trip.trust.count} verified)</span>`
+              : `<span class="a11y-trust"><ion-icon name="shield-outline"></ion-icon> Not yet verified by travelers</span>`}
+            <button type="button" class="a11y-verify-btn" data-verify-id="${trip.id}" data-verify-name="${trip.name}">
+              Have you been here? Confirm this listing
+            </button>
             <div class="a11y-trip-footer">
               <div class="a11y-price-block">
                 <span class="a11y-price">&#8377;${trip.price.toLocaleString('en-IN')}<span class="a11y-price-per"> / person</span></span>
@@ -379,71 +398,17 @@ document.querySelectorAll('[data-scroll-to]').forEach((btn) => {
   });
 });
 
-/* ---------- Hero search: submits into the trip-finder filters ---------- */
-const heroSearchForm = document.getElementById('heroSearchForm');
-const heroSearchInput = document.getElementById('heroSearchInput');
-heroSearchForm?.addEventListener('submit', (e) => {
-  e.preventDefault();
-  document.querySelector('#accessible-trips')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  // trip data is small and local, so a simple client-side name filter is enough for Phase 1
-  const q = heroSearchInput.value.trim().toLowerCase();
-  if (!q || !tripGrid) return;
-  const cards = tripGrid.querySelectorAll('.a11y-trip-card');
-  cards.forEach((card) => {
-    const name = card.querySelector('h3')?.textContent.toLowerCase() || '';
-    card.style.display = name.includes(q) ? '' : 'none';
-  });
-});
+/* ---------- Toolbar voice search (hero has no dedicated search bar) ---------- */
+setupVoiceButton(voiceBtn, null);
 
-/* ---------- Hero voice search button (shares setupVoiceButton with the toolbar mic) ---------- */
-const heroVoiceBtn = document.getElementById('heroVoiceBtn');
-setupVoiceButton(voiceBtn, heroSearchInput);
-setupVoiceButton(heroVoiceBtn, heroSearchInput);
-
-/* ---------- Hero "Ask The Assistant" button ---------- */
-document.getElementById('heroAskAssistant')?.addEventListener('click', () => toggleChat(true));
+/* ---------- Hero "Ask The Assistant" scroll-to buttons already handled by [data-scroll-to] ---------- */
 
 /* ============================================================
-   Entrance animations — SEAL wordmark, hero reveal, scroll reveal
-   Skipped entirely for prefers-reduced-motion (see accessibility.css
-   for why): those users see the final, fully-visible layout with
-   nothing moving.
+   Entrance animations — Hero Reveal
+   Skipped entirely for prefers-reduced-motion: those users see the
+   final, fully-visible layout with nothing moving.
    ============================================================ */
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/* ============================================================
-   Entrance animations — Typewriter SEAL Logo & Hero Reveal
-   ============================================================ */
-function typewriteSealLogo() {
-  const target = document.getElementById('sealTypewriter');
-  if (!target) return;
-
-  const text = 'Explore Without Limits.';
-
-  if (prefersReducedMotion) {
-    target.textContent = text;
-    document.querySelector('.seal-cursor')?.remove();
-    revealHeroContent(0);
-    return;
-  }
-
-  let index = 0;
-  function typeChar() {
-    if (index < text.length) {
-      target.textContent += text.charAt(index);
-      index++;
-      setTimeout(typeChar, 180);
-    } else {
-      // Reveal the rest of the hero once typing completes
-      setTimeout(() => {
-        revealHeroContent(200);
-      }, 250);
-    }
-  }
-
-  // Brief pause before typing begins
-  setTimeout(typeChar, 300);
-}
 
 function revealHeroContent(startDelay = 0) {
   const items = Array.from(document.querySelectorAll('.hero-reveal'));
@@ -459,9 +424,7 @@ function revealHeroContent(startDelay = 0) {
     setTimeout(() => el.classList.add('hero-reveal-in'), startDelay + i * 120);
   });
 }
-
-// Initialize
-typewriteSealLogo();
+revealHeroContent(200);
 
 function setupScrollReveal() {
   const targets = document.querySelectorAll('.package-card, .a11y-trip-card');
@@ -522,6 +485,205 @@ signInForm?.addEventListener('submit', (e) => {
   setTimeout(() => signInModal?.close(), 1600);
 });
 
+/* ============================================================
+   Passkey login (Review 2) — real WebAuthn, not a fake redirect.
+   Uses the browser's native navigator.credentials API. Requires a
+   secure context (HTTPS, or localhost) and an actual authenticator
+   (fingerprint / Face ID / Windows Hello / hardware key) — this
+   can't be exercised in a headless/sandboxed browser, so test it on
+   a real device once deployed.
+   ============================================================ */
+function base64urlToBuffer(base64url) {
+  const padding = '='.repeat((4 - (base64url.length % 4)) % 4);
+  const base64 = (base64url + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  const buffer = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) buffer[i] = raw.charCodeAt(i);
+  return buffer.buffer;
+}
+
+function bufferToBase64url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+  bytes.forEach((b) => { str += String.fromCharCode(b); });
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function registerPasskey() {
+  const username = document.getElementById('sealSignInUsername').value.trim();
+  if (!username) {
+    signInStatus.textContent = 'Enter a username first.';
+    return;
+  }
+  if (!window.PublicKeyCredential) {
+    signInStatus.textContent = 'Passkeys aren\'t supported in this browser.';
+    return;
+  }
+
+  try {
+    signInStatus.textContent = 'Requesting registration options…';
+    const optionsRes = await fetch('/api/passkey/register-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    });
+    const options = await optionsRes.json();
+    if (!optionsRes.ok) throw new Error(options.error || 'Could not get registration options');
+
+    options.challenge = base64urlToBuffer(options.challenge);
+    options.user.id = base64urlToBuffer(options.user.id);
+    (options.excludeCredentials || []).forEach((c) => { c.id = base64urlToBuffer(c.id); });
+
+    signInStatus.textContent = 'Follow your device\'s prompt (fingerprint / Face ID / PIN)…';
+    const credential = await navigator.credentials.create({ publicKey: options });
+
+    const response = {
+      id: credential.id,
+      rawId: bufferToBase64url(credential.rawId),
+      type: credential.type,
+      response: {
+        clientDataJSON: bufferToBase64url(credential.response.clientDataJSON),
+        attestationObject: bufferToBase64url(credential.response.attestationObject),
+      },
+      clientExtensionResults: credential.getClientExtensionResults(),
+    };
+
+    const verifyRes = await fetch('/api/passkey/register-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, response }),
+    });
+    const result = await verifyRes.json();
+    if (!verifyRes.ok || !result.verified) throw new Error(result.error || 'Registration failed');
+
+    signInStatus.textContent = `Passkey registered for "${username}" — you can now sign in with it.`;
+  } catch (err) {
+    signInStatus.textContent = `Passkey registration didn't complete: ${err.message}`;
+  }
+}
+
+async function loginWithPasskey() {
+  const username = document.getElementById('sealSignInUsername').value.trim();
+  if (!username) {
+    signInStatus.textContent = 'Enter your username first.';
+    return;
+  }
+  if (!window.PublicKeyCredential) {
+    signInStatus.textContent = 'Passkeys aren\'t supported in this browser.';
+    return;
+  }
+
+  try {
+    signInStatus.textContent = 'Requesting login challenge…';
+    const optionsRes = await fetch('/api/passkey/login-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username }),
+    });
+    const options = await optionsRes.json();
+    if (!optionsRes.ok) throw new Error(options.error || 'No passkey found for this username');
+
+    options.challenge = base64urlToBuffer(options.challenge);
+    (options.allowCredentials || []).forEach((c) => { c.id = base64urlToBuffer(c.id); });
+
+    signInStatus.textContent = 'Follow your device\'s prompt…';
+    const assertion = await navigator.credentials.get({ publicKey: options });
+
+    const response = {
+      id: assertion.id,
+      rawId: bufferToBase64url(assertion.rawId),
+      type: assertion.type,
+      response: {
+        clientDataJSON: bufferToBase64url(assertion.response.clientDataJSON),
+        authenticatorData: bufferToBase64url(assertion.response.authenticatorData),
+        signature: bufferToBase64url(assertion.response.signature),
+        userHandle: assertion.response.userHandle ? bufferToBase64url(assertion.response.userHandle) : null,
+      },
+      clientExtensionResults: assertion.getClientExtensionResults(),
+    };
+
+    const verifyRes = await fetch('/api/passkey/login-verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, response }),
+    });
+    const result = await verifyRes.json();
+    if (!verifyRes.ok || !result.verified) throw new Error(result.error || 'Login failed');
+
+    if (result.token) { localStorage.setItem('seal_token', result.token); localStorage.setItem('seal_logged_in_user', username); if (typeof loggedInUser !== 'undefined') loggedInUser = username; loadMyRequests(); }
+    signInStatus.textContent = `Signed in as "${username}" with your passkey.`;
+    setTimeout(() => signInModal?.close(), 1200);
+  } catch (err) {
+    signInStatus.textContent = `Passkey sign-in didn't complete: ${err.message}`;
+  }
+}
+
+document.getElementById('sealPasskeyLogin')?.addEventListener('click', loginWithPasskey);
+document.getElementById('sealPasskeyRegister')?.addEventListener('click', registerPasskey);
+
+/* ============================================================
+   Community verification / trust score modal (Review 2)
+   ============================================================ */
+const verifyModal = document.getElementById('sealVerifyModal');
+const verifyForm = document.getElementById('sealVerifyForm');
+const verifyStatus = document.getElementById('sealVerifyStatus');
+const verifyStars = document.getElementById('sealVerifyStars');
+const verifyRatingInput = document.getElementById('sealVerifyRating');
+const verifyDestIdInput = document.getElementById('sealVerifyDestId');
+const verifyDestNameEl = document.getElementById('sealVerifyDestName');
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-verify-id]');
+  if (!btn) return;
+  verifyDestIdInput.value = btn.dataset.verifyId;
+  verifyDestNameEl.textContent = btn.dataset.verifyName;
+  verifyRatingInput.value = '0';
+  verifyStars?.querySelectorAll('button').forEach((s) => s.classList.remove('is-active'));
+  verifyStatus.textContent = '';
+  verifyModal?.showModal();
+});
+
+verifyStars?.addEventListener('click', (e) => {
+  const star = e.target.closest('[data-star]');
+  if (!star) return;
+  const value = Number(star.dataset.star);
+  verifyRatingInput.value = String(value);
+  verifyStars.querySelectorAll('button').forEach((s) => {
+    s.classList.toggle('is-active', Number(s.dataset.star) <= value);
+  });
+});
+
+document.getElementById('sealVerifyClose')?.addEventListener('click', () => verifyModal?.close());
+document.getElementById('sealVerifyCancel')?.addEventListener('click', () => verifyModal?.close());
+
+verifyForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const rating = Number(verifyRatingInput.value);
+  if (!rating) {
+    verifyStatus.textContent = 'Pick a star rating first.';
+    return;
+  }
+  try {
+    const res = await fetch('/api/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        destinationId: verifyDestIdInput.value,
+        rating,
+        note: document.getElementById('sealVerifyNote').value,
+      }),
+    });
+    if (!res.ok) throw new Error('Could not save your confirmation');
+    verifyStatus.textContent = 'Thanks — this helps other travelers trust the listing.';
+    setTimeout(() => {
+      verifyModal?.close();
+      loadTrips();
+    }, 1200);
+  } catch (err) {
+    verifyStatus.textContent = err.message;
+  }
+});
+
 const newsletterForm = document.getElementById('sealNewsletterForm');
 const newsletterStatus = document.getElementById('sealNewsletterStatus');
 newsletterForm?.addEventListener('submit', (e) => {
@@ -559,74 +721,134 @@ inquiryForm?.addEventListener('submit', async (e) => {
   }
 });
 
-/* ============================================================
-   Stats strip count-up + hero mouse-parallax
-   Both skip their motion for prefers-reduced-motion (see the
-   prefersReducedMotion flag set earlier) — numbers just show
-   their final value instantly, and the hero doesn't shift at all.
-   ============================================================ */
-function animateStatNumbers() {
-  const numbers = document.querySelectorAll('.seal-stat-number');
-  if (!numbers.length) return;
 
-  if (prefersReducedMotion || !('IntersectionObserver' in window)) {
-    numbers.forEach((el) => {
-      const target = Number(el.dataset.countTo || 0);
-      el.textContent = target + (el.dataset.suffix || '');
-    });
+
+
+/* ============================================================
+   Freelance Accessibility Consultant (Replaces Cab Service)
+   ============================================================ */
+const consultantDestSelect = document.getElementById('consultantDest');
+const consultantForm = document.getElementById('consultantForm');
+const consultantStatus = document.getElementById('consultantBookingStatus');
+
+function populateConsultantDestinations() {
+  if (!consultantDestSelect || typeof lastLoadedTrips === 'undefined' || !lastLoadedTrips.length) return;
+  const current = consultantDestSelect.value;
+  consultantDestSelect.innerHTML = '<option value="">Select a destination</option>' +
+    lastLoadedTrips.map((t) => `<option value="${t.id}">${t.name}</option>`).join('');
+  if (current) consultantDestSelect.value = current;
+}
+
+consultantForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!localStorage.getItem('seal_token')) {
+    consultantStatus.style.color = '#ef4444';
+    consultantStatus.textContent = 'Please sign in before booking a consultant.';
+    document.getElementById('sealSignInModal')?.showModal();
+    return;
+  }
+  const destId = consultantDestSelect.value;
+  if (!destId) {
+    consultantStatus.textContent = 'Please select a destination first.';
     return;
   }
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        const el = entry.target;
-        const target = Number(el.dataset.countTo || 0);
-        const suffix = el.dataset.suffix || '';
-        const duration = 900;
-        const start = performance.now();
+  const lang = document.getElementById('consultantLang').value;
+  const reqs = Array.from(document.querySelectorAll('input[name="consultantReq"]:checked')).map(cb => cb.value).join(', ');
+  const budget = Number(document.getElementById('consultantBudget').value);
+  if (!budget || budget < 100) {
+    consultantStatus.style.color = '#ef4444';
+    consultantStatus.textContent = 'Please enter a budget of at least ₹100.';
+    return;
+  }
 
-        function tick(now) {
-          const progress = Math.min((now - start) / duration, 1);
-          const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-          el.textContent = Math.round(target * eased) + suffix;
-          if (progress < 1) requestAnimationFrame(tick);
-        }
-        requestAnimationFrame(tick);
-        observer.unobserve(el);
-      });
-    },
-    { threshold: 0.4 }
-  );
-
-  numbers.forEach((el) => observer.observe(el));
-}
-animateStatNumbers();
-
-/* ---------- Subtle hero mouse-parallax ---------- */
-function setupHeroParallax() {
-  const hero = document.getElementById('home');
-  if (!hero || prefersReducedMotion) return;
-  // Skip on touch devices — there's no meaningful "mouse position" there
-  if (window.matchMedia('(pointer: coarse)').matches) return;
-
-  const targets = hero.querySelectorAll('.seal-logo, .hero-eyebrow, .hero-title');
-  targets.forEach((el) => el.classList.add('hero-parallax'));
-
-  hero.addEventListener('mousemove', (e) => {
-    const rect = hero.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width - 0.5; // -0.5 to 0.5
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-
-    targets.forEach((el, i) => {
-      const strength = 6 + i * 2; // deeper elements move a touch more
-      el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+  try {
+    const res = await fetch('/api/consultant-booking', {
+      method: 'POST',
+      headers: sealAuthHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({
+        destinationId: destId,
+        language: lang,
+        requirements: reqs,
+        budget,
+      }),
     });
-  });
 
-  hero.addEventListener('mouseleave', () => {
-    targets.forEach((el) => { el.style.transform = 'translate(0, 0)'; });
-  });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Request failed');
+    }
+
+    consultantStatus.style.color = '#10b981';
+    consultantStatus.textContent = `Success! Your request for a consultant speaking ${lang} has been sent. The freelancer (7% platform fee) will contact you soon.`;
+    consultantForm.reset();
+    loadMyRequests();
+  } catch (err) {
+    consultantStatus.style.color = '#ef4444';
+    consultantStatus.textContent = `Could not process your request: ${err.message}. Please try again.`;
+  }
+});
+
+setTimeout(populateConsultantDestinations, 500);
+
+
+/* ============================================================
+   Traveler's consultant requests + approval notifications
+   Polls the server so a traveler sees "approved" without refreshing.
+   ============================================================ */
+function escHtml(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
-setupHeroParallax();
+
+function showToast(message) {
+  let toast = document.getElementById('sealToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'sealToast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#065f46;color:#fff;padding:14px 22px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:.92rem;max-width:90vw;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.style.display = 'block';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => { toast.style.display = 'none'; }, 8000);
+}
+
+let myRequestsFirstLoad = true;
+async function loadMyRequests() {
+  const panel = document.getElementById('myRequestsPanel');
+  if (!panel || !localStorage.getItem('seal_token')) return;
+  try {
+    const res = await fetch('/api/my-requests', { headers: sealAuthHeaders() });
+    if (!res.ok) return;
+    const rows = await res.json();
+
+    // Notify once per newly-approved request (remembered per browser).
+    const seen = JSON.parse(localStorage.getItem('seal_seen_approved') || '[]');
+    rows.filter((r) => r.status === 'approved' && !seen.includes(r.id)).forEach((r) => {
+      showToast(`Good news! ${r.consultant} accepted your consultant request (${destName(r.destination_id)}).`);
+      seen.push(r.id);
+    });
+    localStorage.setItem('seal_seen_approved', JSON.stringify(seen));
+
+    if (!rows.length) { panel.innerHTML = ''; return; }
+    panel.innerHTML = '<h4 style="margin:24px 0 10px;color:#0f172a;">Your consultant requests</h4>' + rows.map((r) => `
+      <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+        <div style="font-size:.88rem;color:#334155;">
+          <strong>${escHtml(destName(r.destination_id))}</strong> &middot; ${escHtml(r.language)} &middot; &#8377;${Number(r.budget_inr).toLocaleString('en-IN')}<br>
+          <span style="color:#64748b;">${r.status === 'approved' ? 'Accepted by ' + escHtml(r.consultant) : 'Waiting for a matching consultant'}</span>
+        </div>
+        <span style="font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:12px;background:${r.status === 'approved' ? '#d1fae5' : '#fef3c7'};color:${r.status === 'approved' ? '#065f46' : '#92400e'};">${r.status.toUpperCase()}</span>
+      </div>`).join('');
+  } catch (e) { /* offline — try again on the next poll */ }
+}
+
+function destName(id) {
+  const t = (typeof lastLoadedTrips !== 'undefined' ? lastLoadedTrips : []).find((x) => x.id === id);
+  return t ? t.name : id;
+}
+
+setTimeout(loadMyRequests, 1200);
+setInterval(loadMyRequests, 15000);

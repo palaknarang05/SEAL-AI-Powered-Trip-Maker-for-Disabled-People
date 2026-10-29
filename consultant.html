@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEAL | Consultant Dashboard</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <link rel="stylesheet" href="./assets/css/accessibility.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { background: #f8fafc; font-family: 'Montserrat', sans-serif; }
+    .dashboard-header { background: #0f172a; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; }
+    .dashboard-title { font-size: 1.5rem; font-weight: 700; }
+    .dashboard-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
+    .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
+    .stat-title { font-size: 0.9rem; color: #64748b; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    .stat-value { font-size: 2.5rem; font-weight: 800; color: #10b981; }
+    .requests-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .requests-table th, .requests-table td { padding: 15px 20px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .requests-table th { background: #f1f5f9; color: #475569; font-weight: 600; font-size: 0.9rem; }
+    .requests-table tr:last-child td { border-bottom: none; }
+    .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
+    .badge.pending { background: #fef3c7; color: #d97706; }
+    .badge.approved { background: #d1fae5; color: #059669; }
+    .btn-approve { background: #38bdf8; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .btn-approve:hover { background: #0284c7; }
+    .btn-approve:disabled { background: #cbd5e1; cursor: not-allowed; }
+    .logout-btn { background: #e11d48; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <header class="dashboard-header">
+    <div class="dashboard-title"><ion-icon name="briefcase-outline" style="vertical-align: middle; margin-right: 10px;"></ion-icon>Consultant Workspace</div>
+    <div style="display: flex; align-items: center; gap: 20px;">
+      <span id="consultantNameDisplay" style="font-weight: 600;">Welcome!</span>
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title">Total Earned (7% Cut)</div>
+        <div class="stat-value" id="totalEarned">&#8377;0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Completed Trips</div>
+        <div class="stat-value" style="color: #38bdf8;" id="completedTrips">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-title">Pending Approvals</div>
+        <div class="stat-value" style="color: #f59e0b;" id="pendingCount">0</div>
+      </div>
+    </div>
+
+    <h2 style="margin-bottom: 20px; color: #0f172a;">Client Requests</h2>
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Client</th>
+          <th>Destination</th>
+          <th>Language</th>
+          <th>Requirements</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="requestsTableBody">
+        <tr><td colspan="7" style="text-align: center; padding: 30px;">Loading requests...</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <script>
+    // Simple script to load and manage requests
+    const username = localStorage.getItem('seal_logged_in_user');
+    const token = localStorage.getItem('seal_token');
+    if (!username || !token) {
+      window.location.href = '/';
+    }
+    const authHeaders = (extra) => Object.assign({ Authorization: 'Bearer ' + token }, extra || {});
+    const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    document.getElementById('consultantNameDisplay').textContent = 'Welcome, ' + username;
+
+    function logout() {
+      fetch('/api/logout', { method: 'POST', headers: authHeaders() }).catch(() => {});
+      localStorage.removeItem('seal_logged_in_user'); localStorage.removeItem('seal_token');
+      window.location.href = '/';
+    }
+
+    async function loadRequests() {
+      try {
+        const [reqsRes, earningsRes] = await Promise.all([
+          fetch('/api/consultant/requests', { headers: authHeaders() }),
+          fetch('/api/consultant/earnings', { headers: authHeaders() }),
+        ]);
+        if (!reqsRes.ok) throw new Error((await reqsRes.json()).error || 'Could not load requests');
+
+        const reqs = await reqsRes.json();
+        const earningsData = earningsRes.ok ? await earningsRes.json() : { totalEarned: 0, completedTrips: 0 };
+
+        const tbody = document.getElementById('requestsTableBody');
+        tbody.innerHTML = '';
+
+        let pending = 0;
+        reqs.forEach(r => { if (r.status === 'pending') pending++; });
+
+        if (reqs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px;">No requests yet!</td></tr>';
+        } else {
+          reqs.forEach(r => {
+            const tr = document.createElement('tr');
+            const date = new Date(r.created_at).toLocaleDateString();
+            const payoutLabel = r.status === 'approved' && r.consultant_payout_inr != null
+              ? `&#8377;${r.consultant_payout_inr.toLocaleString()} (after 7% fee)`
+              : `Budget: &#8377;${(r.budget_inr || 0).toLocaleString()}`;
+            tr.innerHTML = `
+              <td>${date}</td>
+              <td style="font-weight: 600;">${esc(r.username) || 'Traveler'}</td>
+              <td>${esc(r.destination_id)}</td>
+              <td>${esc(r.language)}</td>
+              <td style="max-width: 220px; font-size: 0.85rem;">${esc(r.requirements)}<br><span style="color:#64748b;">${payoutLabel}</span></td>
+              <td><span class="badge ${r.status}">${r.status.toUpperCase()}</span></td>
+              <td>
+                <button class="btn-approve" ${r.status === 'approved' ? 'disabled' : ''} onclick="approveRequest(${r.id})">
+                  ${r.status === 'approved' ? 'Approved' : 'Approve Trip'}
+                </button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+        }
+
+        document.getElementById('pendingCount').textContent = pending;
+        document.getElementById('completedTrips').textContent = earningsData.completedTrips;
+        document.getElementById('totalEarned').innerHTML = '&#8377;' + earningsData.totalEarned.toLocaleString();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('requestsTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">' + esc(e.message || 'Error loading requests.') + '</td></tr>';
+      }
+    }
+
+    setInterval(loadRequests, 15000);
+
+    window.approveRequest = async function(id) {
+      try {
+        const res = await fetch(`/api/consultant/requests/${id}/approve`, {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Could not approve request');
+        loadRequests();
+      } catch (e) {
+        alert(e.message || 'Could not approve request.');
+      }
+    }
+
+    loadRequests();
+  </script>
+</body>
+</html>

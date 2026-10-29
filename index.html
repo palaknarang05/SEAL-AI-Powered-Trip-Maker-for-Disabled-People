@@ -42,34 +42,41 @@
 <body id="top">
 
 <!--
-  - #ACCESSIBILITY TOOLBAR
-  - Sticky bar: high-contrast toggle, font-size steps, voice search, read-aloud master switch.
+  - #ACCESSIBILITY WIDGET
+  - Floating icon button (bottom-left) that opens a small panel, instead
+    of a permanent full-width bar eating into header space.
 -->
-<div class="a11y-bar" role="region" aria-label="Accessibility tools">
-    <div class="container a11y-bar-inner">
-        <span class="a11y-bar-label"><ion-icon name="accessibility-outline"></ion-icon> Accessibility:</span>
+<button type="button" id="a11yWidgetToggle" class="a11y-widget-toggle" aria-expanded="false" aria-controls="a11yWidgetPanel" aria-label="Accessibility options">
+    <ion-icon name="accessibility-outline"></ion-icon>
+</button>
 
-        <button type="button" class="a11y-btn" id="a11yContrastToggle" aria-pressed="false">
+<div id="a11yWidgetPanel" class="a11y-widget-panel" role="region" aria-label="Accessibility options" hidden>
+    <div class="a11y-widget-header">
+        <span><ion-icon name="accessibility-outline"></ion-icon> Accessibility</span>
+        <button type="button" id="a11yWidgetClose" aria-label="Close accessibility options">&times;</button>
+    </div>
+    <div class="a11y-widget-body">
+        <button type="button" class="a11y-widget-btn" id="a11yContrastToggle" aria-pressed="false">
             <ion-icon name="contrast-outline"></ion-icon> High Contrast
         </button>
-
-        <button type="button" class="a11y-btn" id="a11yFontDecrease" aria-label="Decrease text size">A-</button>
-        <button type="button" class="a11y-btn" id="a11yFontIncrease" aria-label="Increase text size">A+</button>
-
-        <button type="button" class="a11y-btn" id="a11yVoiceSearch" aria-pressed="false">
+        <div class="a11y-widget-row">
+            <span><ion-icon name="text-outline"></ion-icon> Text Size</span>
+            <div class="a11y-widget-stepper">
+                <button type="button" id="a11yFontDecrease" aria-label="Decrease text size">A-</button>
+                <button type="button" id="a11yFontIncrease" aria-label="Increase text size">A+</button>
+            </div>
+        </div>
+        <button type="button" class="a11y-widget-btn" id="a11yVoiceSearch" aria-pressed="false">
             <ion-icon name="mic-outline"></ion-icon> Voice Search
         </button>
-
-        <button type="button" class="a11y-btn" id="a11yReadPage" aria-pressed="false">
+        <button type="button" class="a11y-widget-btn" id="a11yReadPage" aria-pressed="false">
             <ion-icon name="volume-high-outline"></ion-icon> Read Page
         </button>
-
-        <button type="button" class="a11y-btn" id="a11yDarkToggle" aria-pressed="false">
+        <button type="button" class="a11y-widget-btn" id="a11yDarkToggle" aria-pressed="false">
             <ion-icon name="moon-outline"></ion-icon> Dark Mode
         </button>
-
-        <span id="a11yStatus" class="a11y-status" role="status" aria-live="polite"></span>
     </div>
+    <p id="a11yStatus" class="a11y-widget-status" role="status" aria-live="polite"></p>
 </div>
 
 <!--
@@ -101,12 +108,6 @@
 
         <!-- 3. RIGHT: Sleek Widgets & Icons -->
         <div class="header-actions">
-            <!-- Weather Widget -->
-            <div class="weather-widget" title="Current Weather">
-                <ion-icon name="partly-sunny-outline"></ion-icon>
-                <span>28°C Bhopal</span>
-            </div>
-
             <!-- Search Icon -->
             <button class="icon-btn search-btn" aria-label="Jump to search" data-scroll-to="#accessible-trips">
                 <ion-icon name="search-outline"></ion-icon>
@@ -133,16 +134,22 @@
         <section class="hero" id="home">
             <div class="container">
 
-                <!-- Typewriter Animated Title -->
-                <h1 class="seal-logo" aria-label="Explore Without Limits.">
-                    <span id="sealTypewriter"></span><span class="seal-cursor"></span>
-                </h1>
+                <p class="hero-eyebrow hero-reveal" data-reveal-order="1">AI-Powered Trip Maker for Disabled People</p>
 
-                <p class="hero-eyebrow hero-reveal" data-reveal-order="1">Safe Explorer Alternative &bull; AI-Powered Trip Maker for Disabled People</p>
+                <h1 class="hero-title hero-reveal" data-reveal-order="2">Travel Made Accessible</h1>
 
+                <p class="hero-text hero-reveal" data-reveal-order="3">
+                    Filter trips by wheelchair access, sensory comfort, safe food, and sign-language
+                    support — see it all before you book, not after you arrive.
+                </p>
 
+                <div class="btn-group hero-reveal" data-reveal-order="4">
+                    <button type="button" class="btn btn-primary" data-scroll-to="#accessible-trips">Find Accessible Trips</button>
+                </div>
 
-
+                <button type="button" class="hero-scroll-cue" data-scroll-to="#popular-destinations" aria-label="Scroll down">
+                    <ion-icon name="chevron-down-outline"></ion-icon>
+                </button>
 
             </div>
         </section>
@@ -203,26 +210,6 @@
           - Numbers animate up (count-up) once scrolled into view; instant for
             prefers-reduced-motion users (see accessibility.js / accessibility.css).
         -->
-        <section class="seal-stats">
-            <div class="container seal-stats-grid">
-                <div class="seal-stat">
-                    <span class="seal-stat-number" data-count-to="6">0</span>
-                    <span class="seal-stat-label">Accessible Destinations</span>
-                </div>
-                <div class="seal-stat">
-                    <span class="seal-stat-number" data-count-to="4">0</span>
-                    <span class="seal-stat-label">Disability Categories Supported</span>
-                </div>
-                <div class="seal-stat">
-                    <span class="seal-stat-number" data-count-to="0">0</span>
-                    <span class="seal-stat-label">Countdown Timers</span>
-                </div>
-                <div class="seal-stat">
-                    <span class="seal-stat-number" data-count-to="100" data-suffix="%">0%</span>
-                    <span class="seal-stat-label">Keyboard Navigable</span>
-                </div>
-            </div>
-        </section>
 
 
         <!--
@@ -398,6 +385,78 @@
 
             </div>
         </section>
+
+
+        <!--
+          - #FIXED-FARE CABS (Review 2 — novel feature)
+          - Ride apps use surge pricing, which is a real problem for
+            travelers on a fixed budget. These fares are flat, shown
+            before booking, and never change — no surprises.
+        -->
+
+        <section class="consultant-service" id="consultant-service" style="background: #f8fafc; padding: 60px 0;">
+            <div class="container">
+                <span class="itinerary-badge"><ion-icon name="people-outline"></ion-icon> New Service</span>
+                <p class="section-subtitle">Accessibility Consultants</p>
+                <h2 class="h2 section-title">Hire a Freelance Consultant</h2>
+                <p class="section-text" style="max-width: 700px; margin: 0 auto 40px auto; text-align: center;">
+                    Need a local guide who understands accessibility? Hire a specialized freelance consultant to assist you on your trip.
+                    They help disabled travelers navigate safely, and receive 7% of the total trip earning for their expertise.
+                </p>
+
+                <div style="display: flex; justify-content: center;">
+                    <!-- Booking Form -->
+                    <form class="consultant-form" id="consultantForm" style="width: 100%; max-width: 600px; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                        <div style="margin-bottom: 15px;">
+                            <label for="consultantLang" style="display: block; margin-bottom: 8px; font-weight: 500; color: #0f172a;">Preferred Language</label>
+                            <select id="consultantLang" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+                                <option value="">Select a language</option>
+                                <option value="English">English</option>
+                                <option value="Hindi">Hindi</option>
+                                <option value="Indian Sign Language (ISL)">Indian Sign Language (ISL)</option>
+                                <option value="Spanish">Spanish</option>
+                                <option value="French">French</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #0f172a;">Specific Requirements</label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 0.9rem; color: #475569;">
+                                <label><input type="checkbox" name="consultantReq" value="Wheelchair Pushing"> Wheelchair Pushing</label>
+                                <label><input type="checkbox" name="consultantReq" value="Quiet Routes"> Quiet Routes</label>
+                                <label><input type="checkbox" name="consultantReq" value="Medical Assistance"> Medical Assistance</label>
+                                <label><input type="checkbox" name="consultantReq" value="Luggage Help"> Luggage Help</label>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label for="consultantDest" style="display: block; margin-bottom: 8px; font-weight: 500; color: #0f172a;">Select Destination</label>
+                            <select id="consultantDest" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+                                <option value="">Select a destination</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label for="consultantBudget" style="display: block; margin-bottom: 8px; font-weight: 500; color: #0f172a;">Your Budget for This Consultant (₹)</label>
+                            <input type="number" id="consultantBudget" min="100" step="50" placeholder="e.g. 1500" style="width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px;" required>
+                            <p style="font-size: 0.78rem; color: #64748b; margin-top: 6px;">SEAL takes a 7% platform fee from this; the consultant keeps the rest.</p>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px;">Hire Consultant</button>
+                        <p class="seal-inquiry-status" id="consultantBookingStatus" role="status" aria-live="polite" style="margin-top: 15px; text-align: center; color: #2563eb;"></p>
+                    <div id="myRequestsPanel" style="width:100%;max-width:600px;"></div>
+                        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #cbd5e1; padding-top: 15px;">
+                            <p style="font-size: 0.9rem; color: #475569; margin-bottom: 5px;">Are you a local accessibility expert?</p>
+                            <button type="button" class="seal-modal-close" id="sealConsultantRegBtn" style="font-size:0.9rem; font-weight:600; color:#38bdf8; text-decoration:underline; width:auto; height:auto; border-radius:0; background:none; border:none; padding:0; cursor:pointer;">
+                                Register as a Consultant
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
 
 
         <!--
@@ -868,12 +927,142 @@
     </form>
 </div>
 
+
+
+<!-- #PROFILE MODAL -->
+<dialog id="sealProfileModal" class="seal-modal" aria-labelledby="sealProfileTitle">
+    <div class="seal-modal-form">
+        <div class="seal-modal-header">
+            <h2 id="sealProfileTitle">Your Profile</h2>
+            <button type="button" class="seal-modal-close" id="sealProfileClose" aria-label="Close form">&times;</button>
+        </div>
+
+        <div style="margin-top: 15px; color: #475569; font-size: 0.95rem; line-height: 1.5;">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <span id="profDisplayRole" style="display: inline-block; padding: 4px 12px; background: #38bdf8; color: white; border-radius: 20px; font-weight: bold; font-size: 0.85rem;"></span>
+            </div>
+            <p><strong>Username:</strong> <span id="profDisplayUsername" style="color: #0f172a;"></span></p>
+            <div id="profTravelerDetails">
+                <p><strong>Energy Level:</strong> <span id="profDisplayEnergy" style="color: #0f172a;"></span>/5</p>
+                <p><strong>Mobility Type:</strong> <span id="profDisplayMobility" style="text-transform: capitalize; color: #0f172a;"></span></p>
+                <p><strong>Preferences:</strong></p>
+                <ul id="profDisplayPrefs" style="list-style: disc; margin-left: 20px; color: #38bdf8;"></ul>
+            </div>
+
+            <div id="profConsultantDashboard" style="display: none; margin-top: 20px; padding-top: 15px; border-top: 1px solid #cbd5e1;">
+                <h3 style="color: #0f172a; margin-bottom: 10px;">Consultant Dashboard</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div style="flex: 1; background: #f1f5f9; padding: 10px; border-radius: 8px; text-align: center;">
+                        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 5px;">Total Earnings</p>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #10b981;">&#8377;12,450</p>
+                    </div>
+                    <div style="flex: 1; background: #f1f5f9; padding: 10px; border-radius: 8px; text-align: center;">
+                        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 5px;">Pending</p>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #f59e0b;">&#8377;800</p>
+                    </div>
+                </div>
+                <h4 style="color: #0f172a; font-size: 0.9rem; margin-bottom: 8px;">Upcoming Appointments</h4>
+                <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.85rem;">
+                    <li style="background: white; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+                        <strong>Tomorrow, 10:00 AM</strong><br>
+                        Taj Mahal - Wheelchair Assistance<br>
+                        <span style="color: #38bdf8;">Client: Rahul S.</span>
+                    </li>
+                    <li style="background: white; border: 1px solid #cbd5e1; padding: 10px; border-radius: 6px;">
+                        <strong>Oct 12, 2:00 PM</strong><br>
+                        Red Fort - Sign Language Guide<br>
+                        <span style="color: #38bdf8;">Client: Priya M.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="seal-modal-actions"  style="margin-top: 20px; justify-content: stretch;">
+            <button type="button" class="seal-btn" id="sealSignOutBtn" style="flex:1; background: #e11d48; color: white;">Sign Out</button>
+        </div>
+    </div>
+</dialog>
+
+<!-- #FACE REGISTRATION MODAL -->
+<dialog id="sealRegisterModal" class="seal-modal" aria-labelledby="sealRegisterTitle">
+    <form method="dialog" class="seal-modal-form" id="sealRegisterForm">
+        <div class="seal-modal-header">
+            <h2 id="sealRegisterTitle">Register Profile</h2>
+            <button type="button" class="seal-modal-close" id="sealRegisterClose" aria-label="Close form">&times;</button>
+        </div>
+
+        <label class="seal-modal-label" for="sealRegUsername">Username</label>
+        <input class="seal-modal-input" type="text" id="sealRegUsername" required>
+
+
+        <label class="seal-modal-label" for="sealRegRole">Register As</label>
+        <select class="seal-modal-input" id="sealRegRole">
+            <option value="user">Traveler (User)</option>
+            <option value="consultant">Accessibility Consultant</option>
+        </select>
+
+
+        <label class="seal-modal-label" for="sealRegLanguage">Language(s) — hold Ctrl/Cmd to pick more than one</label>
+        <select class="seal-modal-input" id="sealRegLanguage" multiple size="6" style="height: auto;">
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Indian Sign Language (ISL)">Indian Sign Language (ISL)</option>
+            <option value="Bengali">Bengali</option>
+            <option value="Marathi">Marathi</option>
+            <option value="Tamil">Tamil</option>
+            <option value="Telugu">Telugu</option>
+            <option value="Gujarati">Gujarati</option>
+            <option value="Punjabi">Punjabi</option>
+            <option value="Urdu">Urdu</option>
+            <option value="Kannada">Kannada</option>
+            <option value="Malayalam">Malayalam</option>
+        </select>
+
+        <label class="seal-modal-label" for="sealRegEnergy">Energy Level (1-5)</label>
+        <input class="seal-modal-input" type="number" id="sealRegEnergy" min="1" max="5" value="3">
+
+        <label class="seal-modal-label" for="sealRegMobility">Mobility Type</label>
+        <select class="seal-modal-input" id="sealRegMobility">
+            <option value="none">None / Walking</option>
+            <option value="wheelchair">Wheelchair</option>
+            <option value="crutches">Crutches / Cane</option>
+        </select>
+
+        <label class="seal-modal-label" style="margin-top: 10px;">Preferences</label>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom:15px; font-size:0.85rem; color: #475569;">
+            <label><input type="checkbox" id="sealRegPrefWheelchair"> Wheelchair Access</label>
+            <label><input type="checkbox" id="sealRegPrefSensory"> Sensory Friendly</label>
+            <label><input type="checkbox" id="sealRegPrefVeg"> Strict Veg</label>
+            <label><input type="checkbox" id="sealRegPrefPet"> Pet Friendly</label>
+            <label><input type="checkbox" id="sealRegPrefSign"> Sign Language</label>
+        </div>
+
+        <div class="seal-modal-actions" style="margin-top: 10px;">
+            <button type="button" class="seal-passkey-btn" id="sealCaptureRegFaceBtn" style="flex:1; display:flex; align-items:center; justify-content:center; gap:8px;">
+                <ion-icon name="camera-outline"></ion-icon> Capture Face ID
+            </button>
+        </div>
+
+        <div id="sealRegWebcamContainer" style="display:none; text-align:center; margin-bottom: 15px; background: #0f172a; padding: 10px; border-radius: 8px;">
+            <video id="sealRegVideo" width="100%" autoplay muted style="border-radius: 4px; border: 2px solid #38bdf8;"></video>
+            <p id="sealRegFaceStatus" style="font-size: 0.85rem; color: #38bdf8; margin-top: 8px;">Waiting for camera...</p>
+        </div>
+
+        <div class="seal-modal-actions" style="margin-top: 15px;">
+            <button type="button" class="seal-modal-cancel" id="sealRegisterCancel">Cancel</button>
+            <button type="submit" class="seal-btn" id="sealRegisterBtn" disabled>Register Profile</button>
+        </div>
+        <p class="seal-modal-status" id="sealRegisterStatus" aria-live="polite" style="margin-top:10px; text-align:center;"></p>
+    </form>
+</dialog>
+
 <!--
   - #SIGN IN MODAL
-  - Honest Phase-2 preview: real fields, no fake backend behind them.
-    Face-login and the old alert()-based login are gone — this replaces
-    both with one clear, accessible entry point using a native <dialog>
-    (built-in focus trap and Esc-to-close, so no extra JS needed for that).
+  - Real WebAuthn passkey login (fingerprint / Face ID / device unlock)
+    replaces the old fake "Face Login" redirect. Email+password stays as
+    a Phase 2 preview since there's no full account system yet.
+  - NOTE: passkeys need a secure context (HTTPS, or localhost) and an
+    actual authenticator — test on a real device after deploying.
 -->
 <dialog id="sealSignInModal" class="seal-modal" aria-labelledby="sealSignInTitle">
     <form method="dialog" class="seal-modal-form" id="sealSignInForm">
@@ -882,23 +1071,62 @@
             <button type="button" class="seal-modal-close" id="sealSignInClose" aria-label="Close sign in">&times;</button>
         </div>
 
-        <p class="seal-modal-note">
-            Full account sign-in is a Phase 2 feature. This is a preview of the form —
-            nothing is sent anywhere yet.
-        </p>
+        <label class="seal-modal-label" for="sealSignInUsername">Username</label>
+        <input class="seal-modal-input" type="text" id="sealSignInUsername" placeholder="your-username" autocomplete="username">
 
-        <label class="seal-modal-label" for="sealSignInEmail">Email</label>
-        <input class="seal-modal-input" type="email" id="sealSignInEmail" placeholder="you@example.com" autocomplete="email">
-
-        <label class="seal-modal-label" for="sealSignInPassword">Password</label>
-        <input class="seal-modal-input" type="password" id="sealSignInPassword" placeholder="••••••••" autocomplete="current-password">
-
-        <div class="seal-modal-actions">
-            <button type="button" class="btn btn-secondary" id="sealSignInCancel">Cancel</button>
-            <button type="submit" class="btn btn-primary">Sign In</button>
+        <div class="seal-modal-actions" style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+            <button type="button" class="seal-passkey-btn" id="sealFaceLoginBtn" style="width: 100%; display:flex; align-items:center; justify-content:center; gap:8px; padding: 12px; font-size: 1rem;">
+                <ion-icon name="camera-outline"></ion-icon> Sign in with Face ID
+            </button>
+            <button type="button" class="seal-passkey-btn" id="sealPasskeyLogin" style="width: 100%; display:flex; align-items:center; justify-content:center; gap:8px; padding: 12px; font-size: 1rem;">
+                <ion-icon name="finger-print-outline"></ion-icon> Sign in with Passkey
+            </button>
         </div>
 
-        <p class="seal-modal-status" id="sealSignInStatus" role="status" aria-live="polite"></p>
+        <div id="sealLoginWebcamContainer" style="display:none; text-align:center; margin-top: 15px; background: #0f172a; padding: 10px; border-radius: 8px;">
+            <video id="sealLoginVideo" width="100%" autoplay muted style="border-radius: 4px; border: 2px solid #38bdf8;"></video>
+            <p id="sealLoginFaceStatus" style="font-size: 0.85rem; color: #38bdf8; margin-top: 8px;"></p>
+        </div>
+
+        <div class="seal-modal-actions" style="margin-top: 20px; justify-content: center;">
+            <button type="button" class="seal-modal-close" id="sealOpenRegisterModalBtn" style="font-size:0.85rem; color:#64748b; text-decoration:underline; width:auto; height:auto; border-radius:0; background:none; border:none; padding:0; cursor:pointer;">
+                New here? Register your Profile & Face ID
+            </button>
+        </div>
+
+        <p class="seal-modal-status" id="sealSignInStatus" aria-live="polite" style="margin-top: 10px; text-align: center; color: #64748b; font-size: 0.9rem;"></p>
+        </form>
+</dialog>
+
+<!--
+  - #VERIFY MODAL (Review 2 — community trust score)
+-->
+<dialog id="sealVerifyModal" class="seal-modal" aria-labelledby="sealVerifyTitle">
+    <form class="seal-modal-form seal-verify-form" id="sealVerifyForm">
+        <div class="seal-modal-header">
+            <h2 id="sealVerifyTitle">Confirm This Listing</h2>
+            <button type="button" class="seal-modal-close" id="sealVerifyClose" aria-label="Close">&times;</button>
+        </div>
+        <p class="seal-modal-note">
+            Have you actually visited <strong id="sealVerifyDestName">this place</strong>? Rate how accurate its
+            accessibility tags were — this builds the community trust score shown on the listing.
+        </p>
+        <div class="seal-verify-stars" id="sealVerifyStars" role="radiogroup" aria-label="Accuracy rating">
+            <button type="button" data-star="1" aria-label="1 star">&#9733;</button>
+            <button type="button" data-star="2" aria-label="2 stars">&#9733;</button>
+            <button type="button" data-star="3" aria-label="3 stars">&#9733;</button>
+            <button type="button" data-star="4" aria-label="4 stars">&#9733;</button>
+            <button type="button" data-star="5" aria-label="5 stars">&#9733;</button>
+        </div>
+        <input type="hidden" id="sealVerifyDestId">
+        <input type="hidden" id="sealVerifyRating" value="0">
+        <label class="seal-modal-label" for="sealVerifyNote">Note (optional)</label>
+        <textarea class="seal-modal-input" id="sealVerifyNote" rows="2" placeholder="e.g. Ramp was steeper than expected"></textarea>
+        <div class="seal-modal-actions">
+            <button type="button" class="btn btn-secondary" id="sealVerifyCancel">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+        <p class="seal-modal-status" id="sealVerifyStatus" role="status" aria-live="polite"></p>
     </form>
 </dialog>
 
@@ -909,8 +1137,10 @@
 <!--
   - custom js link
 -->
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 <script src="./assets/js/script.js"></script>
 <script src="./assets/js/accessibility.js"></script>
+<script src="./assets/js/face-auth.js"></script>
 
 <!--
   - ionicon link
